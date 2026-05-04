@@ -1,224 +1,139 @@
 import React, { useState } from 'react';
-import {
-	StyleSheet,
-	Text,
-	View,
-	TextInput,
-	Pressable,
-	KeyboardAvoidingView,
-	Platform,
-	ScrollView,
-} from 'react-native';
+import { Text, View, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { getApiErrorMessage } from '../api/client';
 
 export default function SignupScream({ onRegister, onVoltar }) {
-	const [nome, setNome] = useState('');
-	const [email, setEmail] = useState('');
-	const [senha, setSenha] = useState('');
-	const [confirmar, setConfirmar] = useState('');
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [confirmar, setConfirmar] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-	const passwordsMatch = senha.length > 0 && senha === confirmar;
-	const allFilled =
-		nome.trim().length > 0 &&
-		email.trim().length > 0 &&
-		senha.length > 0 &&
-		confirmar.length > 0;
-	const canSubmit = allFilled && passwordsMatch;
+  const passwordsMatch = senha.length > 0 && senha === confirmar;
+  const allFilled =
+    nome.trim().length > 0 &&
+    email.trim().length > 0 &&
+    senha.length > 0 &&
+    confirmar.length > 0;
+  const canSubmit = allFilled && passwordsMatch && !loading;
 
-	return (
-		<SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
-			<StatusBar style="dark" />
-			<View style={styles.header}>
-				<Pressable
-					style={styles.headerRow}
-					onPress={() => onVoltar && onVoltar()}
-					hitSlop={12}
-					accessibilityRole="button"
-					accessibilityLabel="Voltar"
-				>
-					<Text style={styles.backArrow}>←</Text>
-					<Text style={styles.headerTitle}>Signup</Text>
-				</Pressable>
-			</View>
-			<KeyboardAvoidingView
-				style={styles.flex}
-				behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-			>
-				<ScrollView
-					contentContainerStyle={styles.scrollContent}
-					keyboardShouldPersistTaps="handled"
-					showsVerticalScrollIndicator={false}
-				>
-					<Text style={styles.screenTitle}>SIGN UP</Text>
+  return (
+    <SafeAreaView className="flex-1 bg-[#ededed]" edges={['top', 'left', 'right']}>
+      <StatusBar style="dark" />
+      <View className="border-b border-neutral-300 bg-white px-3 py-3">
+        <Pressable
+          className="flex-row items-center gap-2"
+          onPress={() => onVoltar && onVoltar()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Voltar"
+        >
+          <Text className="pr-1 text-[22px] font-semibold text-black">←</Text>
+          <Text className="text-[17px] font-normal text-black">Signup</Text>
+        </Pressable>
+      </View>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerClassName="flex-grow px-6 pb-8 pt-9"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Text className="mb-10 w-full text-center text-[28px] font-bold uppercase text-[#4169E1]">
+            SIGN UP
+          </Text>
 
-					<View style={styles.fieldBlock}>
-						<Text style={styles.label}>Nome</Text>
-						<TextInput
-							style={styles.input}
-							value={nome}
-							onChangeText={setNome}
-							autoCapitalize="words"
-						/>
-					</View>
+          <View className="mb-5 w-full max-w-[400px] self-center">
+            <Text className="mb-2 self-start text-[15px] text-black">Nome</Text>
+            <TextInput
+              className="min-h-12 w-full rounded-sm border border-black bg-[#80CFFF] px-3 text-base text-black"
+              value={nome}
+              onChangeText={setNome}
+              autoCapitalize="words"
+            />
+          </View>
 
-					<View style={styles.fieldBlock}>
-						<Text style={styles.label}>Email</Text>
-						<TextInput
-							style={styles.input}
-							value={email}
-							onChangeText={setEmail}
-							keyboardType="email-address"
-							autoCapitalize="none"
-							autoCorrect={false}
-						/>
-					</View>
+          <View className="mb-5 w-full max-w-[400px] self-center">
+            <Text className="mb-2 self-start text-[15px] text-black">Email</Text>
+            <TextInput
+              className="min-h-12 w-full rounded-sm border border-black bg-[#80CFFF] px-3 text-base text-black"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
 
-					<View style={styles.fieldBlock}>
-						<Text style={styles.label}>Senha</Text>
-						<TextInput
-							style={styles.input}
-							value={senha}
-							onChangeText={setSenha}
-							secureTextEntry
-							autoCapitalize="none"
-						/>
-					</View>
+          <View className="mb-5 w-full max-w-[400px] self-center">
+            <Text className="mb-2 self-start text-[15px] text-black">Senha</Text>
+            <TextInput
+              className="min-h-12 w-full rounded-sm border border-black bg-[#80CFFF] px-3 text-base text-black"
+              value={senha}
+              onChangeText={setSenha}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+          </View>
 
-					<View style={styles.fieldBlock}>
-						<Text style={styles.label}>Confirmar Senha</Text>
-						<TextInput
-							style={styles.input}
-							value={confirmar}
-							onChangeText={setConfirmar}
-							secureTextEntry
-							autoCapitalize="none"
-						/>
-					</View>
+          <View className="mb-5 w-full max-w-[400px] self-center">
+            <Text className="mb-2 self-start text-[15px] text-black">Confirmar Senha</Text>
+            <TextInput
+              className="min-h-12 w-full rounded-sm border border-black bg-[#80CFFF] px-3 text-base text-black"
+              value={confirmar}
+              onChangeText={setConfirmar}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+          </View>
 
-					<View style={styles.afterFields}>
-						<Pressable
-							style={[styles.registerBtn, !canSubmit && styles.registerBtnDisabled]}
-							disabled={!canSubmit}
-							onPress={() => canSubmit && onRegister && onRegister(email.trim())}
-						>
-							<Text style={[styles.registerBtnText, !canSubmit && styles.registerBtnTextDisabled]}>
-								REGISTRAR
-							</Text>
-						</Pressable>
+          {error ? (
+            <Text className="mb-3 w-full max-w-[400px] self-center text-center text-sm text-[#b00020]">
+              {error}
+            </Text>
+          ) : null}
 
-						<Pressable onPress={() => onVoltar && onVoltar()} hitSlop={10}>
-							<Text style={styles.voltarLink}>Voltar</Text>
-						</Pressable>
-					</View>
-				</ScrollView>
-			</KeyboardAvoidingView>
-		</SafeAreaView>
-	);
+          <View className="mt-2 w-full max-w-[400px] self-center items-center">
+            <Pressable
+              className={`min-w-[120px] items-center justify-center border border-black bg-[#CCCCCC] px-6 py-2.5 ${
+                !canSubmit ? 'opacity-45' : ''
+              }`}
+              disabled={!canSubmit}
+              onPress={async () => {
+                if (!canSubmit || !onRegister) return;
+                setError('');
+                setLoading(true);
+                try {
+                  await onRegister({
+                    nome: nome.trim(),
+                    email: email.trim(),
+                    senha,
+                  });
+                } catch (e) {
+                  setError(getApiErrorMessage(e, 'Não foi possível registrar'));
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              <Text
+                className={`text-[15px] font-bold uppercase ${canSubmit ? 'text-[#444]' : 'text-[#666]'}`}
+              >
+                {loading ? 'AGUARDE…' : 'REGISTRAR'}
+              </Text>
+            </Pressable>
+
+            <Pressable onPress={() => onVoltar && onVoltar()} hitSlop={10}>
+              <Text className="mt-2.5 text-center text-[13px] text-black">Voltar</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
 }
-
-const styles = StyleSheet.create({
-	safe: {
-		flex: 1,
-		backgroundColor: '#ededed',
-	},
-	header: {
-		backgroundColor: '#fff',
-		paddingHorizontal: 12,
-		paddingVertical: 12,
-		borderBottomWidth: StyleSheet.hairlineWidth,
-		borderBottomColor: '#ddd',
-	},
-	headerRow: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		gap: 8,
-	},
-	backArrow: {
-		fontSize: 22,
-		color: '#000',
-		fontWeight: '600',
-		paddingRight: 4,
-	},
-	headerTitle: {
-		fontSize: 17,
-		color: '#000',
-		fontWeight: '400',
-	},
-	flex: {
-		flex: 1,
-	},
-	scrollContent: {
-		flexGrow: 1,
-		paddingHorizontal: 24,
-		paddingTop: 36,
-		paddingBottom: 32,
-	},
-	screenTitle: {
-		fontSize: 28,
-		fontWeight: '700',
-		color: '#4169E1',
-		textTransform: 'uppercase',
-		marginBottom: 40,
-		width: '100%',
-		textAlign: 'center',
-	},
-	fieldBlock: {
-		width: '100%',
-		maxWidth: 400,
-		alignSelf: 'center',
-		marginBottom: 22,
-	},
-	label: {
-		fontSize: 15,
-		color: '#000',
-		marginBottom: 8,
-		alignSelf: 'flex-start',
-	},
-	input: {
-		width: '100%',
-		minHeight: 48,
-		backgroundColor: '#80CFFF',
-		borderWidth: 1,
-		borderColor: '#000',
-		borderRadius: 3,
-		paddingHorizontal: 12,
-		fontSize: 16,
-		color: '#000',
-	},
-	afterFields: {
-		width: '100%',
-		maxWidth: 400,
-		alignSelf: 'center',
-		alignItems: 'center',
-		marginTop: 8,
-	},
-	registerBtn: {
-		minWidth: 120,
-		paddingVertical: 10,
-		paddingHorizontal: 24,
-		backgroundColor: '#CCCCCC',
-		borderWidth: 1,
-		borderColor: '#000',
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	registerBtnDisabled: {
-		opacity: 0.45,
-	},
-	registerBtnText: {
-		fontSize: 15,
-		fontWeight: '700',
-		color: '#444',
-		textTransform: 'uppercase',
-	},
-	registerBtnTextDisabled: {
-		color: '#666',
-	},
-	voltarLink: {
-		marginTop: 10,
-		fontSize: 13,
-		color: '#000',
-		textAlign: 'center',
-	},
-});

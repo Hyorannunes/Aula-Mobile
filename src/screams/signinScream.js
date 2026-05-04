@@ -1,191 +1,108 @@
 import React, { useState, useEffect } from 'react';
-import {
-	StyleSheet,
-	Text,
-	View,
-	TextInput,
-	Pressable,
-	KeyboardAvoidingView,
-	Platform,
-	ScrollView,
-} from 'react-native';
+import { Text, View, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { getApiErrorMessage } from '../api/client';
 
 export default function SigninScream({ onSignIn, onNavigateToSignup, initialEmail = '' }) {
-	const [email, setEmail] = useState(initialEmail || '');
-	const [senha, setSenha] = useState('');
-	const canSubmit = email.trim().length > 0 && senha.length > 0;
+  const [email, setEmail] = useState(initialEmail || '');
+  const [senha, setSenha] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const canSubmit = email.trim().length > 0 && senha.length > 0 && !loading;
 
-	useEffect(() => {
-		setEmail(initialEmail || '');
-	}, [initialEmail]);
+  useEffect(() => {
+    setEmail(initialEmail || '');
+  }, [initialEmail]);
 
-	return (
-		<SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
-			<StatusBar style="dark" />
-			<View style={styles.header}>
-				<Text style={styles.headerTitle}>Signin</Text>
-			</View>
-			<KeyboardAvoidingView
-				style={styles.flex}
-				behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-			>
-				<ScrollView
-					contentContainerStyle={styles.scrollContent}
-					keyboardShouldPersistTaps="handled"
-					showsVerticalScrollIndicator={false}
-				>
-					<Text style={styles.screenTitle}>SIGN IN</Text>
+  return (
+    <SafeAreaView className="flex-1 bg-[#ededed]" edges={['top', 'left', 'right']}>
+      <StatusBar style="dark" />
+      <View className="border-b border-neutral-300 bg-white px-4 py-3.5">
+        <Text className="text-[17px] font-bold text-black">Signin</Text>
+      </View>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerClassName="flex-grow px-6 pb-8 pt-9"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Text className="mb-10 w-full text-center text-[28px] font-bold uppercase text-[#4169E1]">
+            SIGN IN
+          </Text>
 
-					<View style={styles.fieldBlock}>
-						<Text style={styles.label}>Email</Text>
-						<TextInput
-							style={styles.input}
-							value={email}
-							onChangeText={setEmail}
-							placeholder=""
-							keyboardType="email-address"
-							autoCapitalize="none"
-							autoCorrect={false}
-						/>
-					</View>
+          <View className="mb-5 w-full max-w-[400px] self-center">
+            <Text className="mb-2 self-start text-[15px] text-black">Email</Text>
+            <TextInput
+              className="min-h-12 w-full border border-black bg-[#80CFFF] px-3 text-base text-black"
+              value={email}
+              onChangeText={setEmail}
+              placeholder=""
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
 
-					<View style={styles.fieldBlock}>
-						<Text style={styles.label}>Senha</Text>
-						<TextInput
-							style={styles.input}
-							value={senha}
-							onChangeText={setSenha}
-							secureTextEntry
-							autoCapitalize="none"
-						/>
-					</View>
+          <View className="mb-5 w-full max-w-[400px] self-center">
+            <Text className="mb-2 self-start text-[15px] text-black">Senha</Text>
+            <TextInput
+              className="min-h-12 w-full border border-black bg-[#80CFFF] px-3 text-base text-black"
+              value={senha}
+              onChangeText={setSenha}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+          </View>
 
-					<View style={styles.afterFields}>
-						<Pressable
-							style={[styles.enterBtn, canSubmit && styles.enterBtnActive]}
-							disabled={!canSubmit}
-							onPress={() => canSubmit && onSignIn && onSignIn()}
-						>
-							<Text style={[styles.enterBtnText, canSubmit && styles.enterBtnTextActive]}>
-								ENTRAR
-							</Text>
-						</Pressable>
+          {error ? (
+            <Text className="mb-3 w-full max-w-[400px] self-center text-center text-sm text-[#b00020]">
+              {error}
+            </Text>
+          ) : null}
 
-						<Text style={styles.footerLine}>
-							Não possui conta ainda?{' '}
-							<Text
-								style={styles.footerLink}
-								onPress={() => onNavigateToSignup && onNavigateToSignup()}
-							>
-								Crie agora
-							</Text>
-							.
-						</Text>
-					</View>
-				</ScrollView>
-			</KeyboardAvoidingView>
-		</SafeAreaView>
-	);
+          <View className="mt-2 w-full max-w-[400px] self-center items-center">
+            <Pressable
+              className={`min-w-[108px] items-center justify-center border border-black px-5 py-2.5 ${
+                canSubmit ? 'bg-[#4169E1]' : 'bg-[#CCCCCC]'
+              }`}
+              disabled={!canSubmit}
+              onPress={async () => {
+                if (!canSubmit || !onSignIn) return;
+                setError('');
+                setLoading(true);
+                try {
+                  await onSignIn(email.trim(), senha);
+                } catch (e) {
+                  setError(getApiErrorMessage(e, 'Não foi possível entrar'));
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              <Text
+                className={`text-[15px] font-bold uppercase ${canSubmit ? 'text-white' : 'text-[#888]'}`}
+              >
+                {loading ? 'AGUARDE…' : 'ENTRAR'}
+              </Text>
+            </Pressable>
+
+            <Text className="mt-1.5 text-center text-[13px] leading-[18px] text-[#333]">
+              Não possui conta ainda?{' '}
+              <Text
+                className="text-[13px] font-semibold text-[#4169E1]"
+                onPress={() => onNavigateToSignup && onNavigateToSignup()}
+              >
+                Crie agora
+              </Text>
+              .
+            </Text>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
 }
-
-const styles = StyleSheet.create({
-	safe: {
-		flex: 1,
-		backgroundColor: '#ededed',
-	},
-	header: {
-		backgroundColor: '#fff',
-		paddingHorizontal: 16,
-		paddingVertical: 14,
-		borderBottomWidth: StyleSheet.hairlineWidth,
-		borderBottomColor: '#ddd',
-	},
-	headerTitle: {
-		fontSize: 17,
-		color: '#000',
-		fontWeight: '700',
-	},
-	flex: {
-		flex: 1,
-	},
-	scrollContent: {
-		flexGrow: 1,
-		paddingHorizontal: 24,
-		paddingTop: 36,
-		paddingBottom: 32,
-	},
-	screenTitle: {
-		fontSize: 28,
-		fontWeight: '700',
-		color: '#4169E1',
-		textTransform: 'uppercase',
-		marginBottom: 40,
-		width: '100%',
-		textAlign: 'center',
-	},
-	fieldBlock: {
-		width: '100%',
-		maxWidth: 400,
-		alignSelf: 'center',
-		marginBottom: 22,
-	},
-	label: {
-		fontSize: 15,
-		color: '#000',
-		marginBottom: 8,
-		alignSelf: 'flex-start',
-	},
-	input: {
-		width: '100%',
-		minHeight: 48,
-		backgroundColor: '#80CFFF',
-		borderWidth: 1,
-		borderColor: '#000',
-		paddingHorizontal: 12,
-		fontSize: 16,
-		color: '#000',
-	},
-	afterFields: {
-		width: '100%',
-		maxWidth: 400,
-		alignSelf: 'center',
-		alignItems: 'center',
-		marginTop: 8,
-	},
-	enterBtn: {
-		minWidth: 108,
-		paddingVertical: 10,
-		paddingHorizontal: 22,
-		backgroundColor: '#CCCCCC',
-		borderWidth: 1,
-		borderColor: '#000',
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	enterBtnActive: {
-		backgroundColor: '#4169E1',
-	},
-	enterBtnText: {
-		fontSize: 15,
-		fontWeight: '700',
-		color: '#888',
-		textTransform: 'uppercase',
-	},
-	enterBtnTextActive: {
-		color: '#fff',
-	},
-	footerLine: {
-		marginTop: 6,
-		fontSize: 13,
-		color: '#333',
-		textAlign: 'center',
-		lineHeight: 18,
-	},
-	footerLink: {
-		fontSize: 13,
-		color: '#4169E1',
-		fontWeight: '600',
-	},
-});

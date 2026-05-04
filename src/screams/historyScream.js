@@ -1,12 +1,5 @@
 import React, { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Animated,
-} from 'react-native';
+import { View, Text, Pressable, ScrollView, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { copyToClipboard } from '../services/clipboardService';
@@ -23,7 +16,7 @@ export default function HistoryScream({ history = [], onBack, onRemoveItem }) {
   const toastAnim = useRef(new Animated.Value(0)).current;
   const toastTimeoutRef = useRef(null);
 
-  const itemKey = (item, index) => `${item.createdAt ?? ''}_${index}`;
+  const itemKey = (item, index) => item.id ?? `${item.createdAt ?? ''}_${index}`;
 
   const toggleReveal = (key) => {
     setRevealedByKey((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -56,25 +49,33 @@ export default function HistoryScream({ history = [], onBack, onRemoveItem }) {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+    <SafeAreaView className="flex-1 bg-[#ececec]" edges={['top', 'left', 'right']}>
       <StatusBar style="dark" />
-      <View style={styles.headerBar}>
-        <Pressable style={styles.headerSide} onPress={onBack} hitSlop={12} accessibilityRole="button" accessibilityLabel="Voltar">
-          <Text style={styles.backArrow}>←</Text>
+      <View className="flex-row items-center justify-between border-b border-neutral-300 bg-white px-2 py-2.5">
+        <Pressable
+          className="min-w-[44px] justify-center"
+          onPress={onBack}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Voltar"
+        >
+          <Text className="text-[22px] font-semibold text-black">←</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>Históricos de senhas</Text>
-        <View style={styles.headerSide} />
+        <Text className="flex-1 text-center text-base font-semibold text-black">Históricos de senhas</Text>
+        <View className="min-w-[44px] justify-center" />
       </View>
 
-      <Text style={styles.pageTitle}>HISTÓRICO DE SENHAS</Text>
+      <Text className="mx-4 mb-3.5 mt-4 text-center text-xl font-extrabold uppercase text-[#4169E1]">
+        HISTÓRICO DE SENHAS
+      </Text>
 
       <ScrollView
-        style={styles.list}
-        contentContainerStyle={styles.listContent}
+        className="w-full flex-1"
+        contentContainerClassName="px-4 pb-4"
         showsVerticalScrollIndicator={false}
       >
         {history.length === 0 && (
-          <Text style={styles.empty}>Nenhuma senha salva ainda.</Text>
+          <Text className="mt-8 text-center text-[15px] text-neutral-600">Nenhuma senha salva ainda.</Text>
         )}
         {history.map((item, index) => {
           const key = itemKey(item, index);
@@ -82,39 +83,43 @@ export default function HistoryScream({ history = [], onBack, onRemoveItem }) {
           const passwordDisplay = revealed ? item.value : maskPassword(item.value);
 
           return (
-            <View key={key} style={styles.card}>
-              <Text style={styles.cardApp}>{item.purpose || '—'}</Text>
-              <View style={styles.cardBottom}>
-                <Text style={styles.cardPassword} numberOfLines={1} ellipsizeMode="tail">
+            <View key={key} className="mb-3 rounded-[10px] border border-black bg-white px-3.5 py-3.5">
+              <Text className="mb-3 text-[17px] font-bold text-black">{item.purpose || '—'}</Text>
+              <View className="flex-row items-center justify-between gap-2">
+                <Text
+                  className="flex-1 text-base font-semibold tracking-wide text-[#111]"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
                   {passwordDisplay}
                 </Text>
-                <View style={styles.iconRow}>
+                <View className="flex-row items-center gap-1">
                   <Pressable
-                    style={styles.iconHit}
+                    className="p-1"
                     onPress={() => toggleReveal(key)}
                     hitSlop={6}
                     accessibilityRole="button"
                     accessibilityLabel={revealed ? 'Ocultar senha' : 'Mostrar senha'}
                   >
-                    <Text style={styles.iconGlyph}>{revealed ? '🙈' : '👁'}</Text>
+                    <Text className="text-[22px]">{revealed ? '🙈' : '👁'}</Text>
                   </Pressable>
                   <Pressable
-                    style={styles.iconHit}
+                    className="p-1"
                     onPress={() => handleCopy(item.value)}
                     hitSlop={6}
                     accessibilityRole="button"
                     accessibilityLabel="Copiar senha"
                   >
-                    <Text style={styles.iconGlyph}>📋</Text>
+                    <Text className="text-[22px]">📋</Text>
                   </Pressable>
                   <Pressable
-                    style={styles.iconHit}
-                    onPress={() => onRemoveItem && onRemoveItem(index)}
+                    className="p-1"
+                    onPress={() => item.id && onRemoveItem && onRemoveItem(item.id)}
                     hitSlop={6}
                     accessibilityRole="button"
                     accessibilityLabel="Excluir senha"
                   >
-                    <Text style={styles.iconGlyph}>🗑️</Text>
+                    <Text className="text-[22px]">🗑️</Text>
                   </Pressable>
                 </View>
               </View>
@@ -123,9 +128,13 @@ export default function HistoryScream({ history = [], onBack, onRemoveItem }) {
         })}
       </ScrollView>
 
-      <View style={styles.footer}>
-        <Pressable style={styles.voltarBtn} onPress={onBack}>
-          <Text style={styles.voltarBtnText}>VOLTAR</Text>
+      <View className="items-center bg-[#ececec] px-4 py-4 pb-5">
+        <Pressable
+          className="rounded-lg bg-[#4169E1] px-12 py-3.5 shadow-md shadow-black/20"
+          style={{ elevation: 4 }}
+          onPress={onBack}
+        >
+          <Text className="text-center text-[15px] font-extrabold uppercase text-white">VOLTAR</Text>
         </Pressable>
       </View>
 
@@ -133,123 +142,3 @@ export default function HistoryScream({ history = [], onBack, onRemoveItem }) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: '#ececec',
-  },
-  headerBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ccc',
-  },
-  headerSide: {
-    minWidth: 44,
-    justifyContent: 'center',
-  },
-  backArrow: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#000',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-  },
-  pageTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#4169E1',
-    textTransform: 'uppercase',
-    textAlign: 'center',
-    marginTop: 16,
-    marginBottom: 14,
-    paddingHorizontal: 16,
-  },
-  list: {
-    flex: 1,
-    width: '100%',
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  empty: {
-    fontSize: 15,
-    color: '#555',
-    textAlign: 'center',
-    marginTop: 32,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#000',
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    marginBottom: 12,
-  },
-  cardApp: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#000',
-    marginBottom: 12,
-  },
-  cardBottom: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  cardPassword: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111',
-    letterSpacing: 1,
-  },
-  iconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  iconHit: {
-    padding: 4,
-  },
-  iconGlyph: {
-    fontSize: 22,
-  },
-  footer: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingBottom: 20,
-    alignItems: 'center',
-    backgroundColor: '#ececec',
-  },
-  voltarBtn: {
-    backgroundColor: '#4169E1',
-    paddingVertical: 14,
-    paddingHorizontal: 48,
-    borderRadius: 8,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-  },
-  voltarBtnText: {
-    color: '#fff',
-    fontWeight: '800',
-    fontSize: 15,
-    textTransform: 'uppercase',
-  },
-});
